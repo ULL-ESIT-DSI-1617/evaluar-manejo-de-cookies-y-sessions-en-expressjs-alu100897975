@@ -9,7 +9,7 @@ var bodyParser = require('body-parser');
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
-app.use(bodyParser.urlencoded({ extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 var hash = bcrypt.hashSync("contraseña");
 console.log('contraseña de usuario encriptada: ${hash}');
@@ -32,6 +32,10 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.get('/', (req, res)=>{
+  res.redirect('/login');
+})
+
 app.get('/login', (req, res)=>{
   res.render('login');
 });
@@ -45,12 +49,12 @@ var auth = function(req, res, next) {
 
 app.post('/login', (req, res)=>{
   console.log(req.query);
-  if(!req.query.username || !req.query.password){
+  if(!req.body.username || !req.body.password){
     console.log('login failed');
     res.send('login failed');
-  } else if(req.query.username in users &&
-            bcrypt.compareSync(req.query.password, users[req.query.username])){
-              req.session.user = req.query.username;
+  } else if(req.body.username in users &&
+            bcrypt.compareSync(req.body.password, users[req.body.username])){
+              req.session.user = req.body.username;
               req.session.admin = true;
               res.send("login exitoso! usuario: "+req.session.user);
             }else {
@@ -58,6 +62,10 @@ app.post('/login', (req, res)=>{
               res.send("No has podido loguear.");
             }
 });
+
+app.get('/content/*?', auth); //Se pasará al siguiente middleware solo si estamos autenticados.
+
+app.get('/content', express.static(path.join(__dirname, 'public')));
 
 app.get('/logout', (req, res)=>{
   req.session.destroy();
