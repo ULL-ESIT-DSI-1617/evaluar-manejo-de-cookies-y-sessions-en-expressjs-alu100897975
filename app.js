@@ -6,6 +6,8 @@ var bcrypt = require('bcrypt-nodejs');
 var cookieParser = require('cookie-parser');
 var util = require('util');
 var bodyParser = require('body-parser');
+var jsonfile = require('jsonfile');
+var file = "./users.json";
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
@@ -18,6 +20,10 @@ var users = {
   fer : bcrypt.hashSync("ferpassword"),
   amy : bcrypt.hashSync("amyspassword")
 };
+
+jsonfile.writeFile(file, users, {spaces: 2}, (err)=>{
+  console.error(err);
+});
 
 app.use(cookieParser());
 app.use(session({
