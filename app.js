@@ -40,13 +40,6 @@ app.get('/login', (req, res)=>{
   res.render('login');
 });
 
-var auth = function(req, res, next) {
-  if (req.session && req.session.user in users)
-    return next();
-  else
-    return res.sendStatus(401);
-};
-
 app.post('/login', (req, res)=>{
   console.log(req.query);
   if(!req.body.username || !req.body.password){
@@ -63,13 +56,20 @@ app.post('/login', (req, res)=>{
             }
 });
 
-app.get('/content/*?', auth); //Se pasará al siguiente middleware solo si estamos autenticados.
+var auth = function(req, res, next) {
+  if (req.session && req.session.user in users)
+    return next();
+  else
+    return res.sendStatus(401);
+};
 
-app.get('/content', express.static(path.join(__dirname, 'public')));
+//app.get('/content/*?', auth); //Se pasará al siguiente middleware solo si estamos autenticados.
+
+app.use( "/content", [ auth, express.static( __dirname + "/public" ) ] );
 
 app.get('/logout', (req, res)=>{
   req.session.destroy();
-  res.send(layout("logout exitoso!"));
+  res.send("logout exitoso!");
 });
 
 
